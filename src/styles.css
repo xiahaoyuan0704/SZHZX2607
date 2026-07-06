@@ -108,3 +108,46 @@ tr.group td { background:#edf8ff; color:#1769ad; font-weight:900; }
   box-shadow: inset 0 2px 8px rgba(47, 143, 216, .1);
 }
 .quantity-input:focus { outline: 3px solid rgba(74, 168, 237, .22); border-color:#2f9fe3; }
+
+/* Dense table mode: show more rows/columns with less scrolling. */
+th {
+  font-size: 15px;
+}
+th, td {
+  padding: 10px 12px;
+}
+td {
+  font-size: 14px;
+  line-height: 1.35;
+}
+th:nth-child(1), td:nth-child(1) { width: 70px; }
+th:nth-child(2), td:nth-child(2) { width: 132px; }
+th:nth-child(3), td:nth-child(3) { min-width: 300px; }
+th:nth-child(4), td:nth-child(4) { width: 72px; }
+th:nth-child(5), td:nth-child(5) { width: 150px; }
+th:nth-child(6), td:nth-child(6) { min-width: 360px; }
+.quantity-input {
+  width: 116px;
+  height: 34px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+.category-cell {
+  position: relative;
+  font-weight: 800;
+  color: #1769ad;
+  background: #f4faff;
+}
+.category-toggle {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 8px;
+  color: #1769ad;
+  background: #dff0ff;
+  font-weight: 900;
+  line-height: 1;
+}
+.category-toggle:hover {
+  background: #c7e4ff;
+}

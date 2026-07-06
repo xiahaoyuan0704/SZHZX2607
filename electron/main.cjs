@@ -1,7 +1,8 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('node:path')
 
-const isDev = !app.isPackaged
+const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+const isDev = !app.isPackaged && Boolean(process.env.ELECTRON_DEV)
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -19,8 +20,7 @@ function createWindow() {
   })
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173')
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    mainWindow.loadURL(devServerUrl)
     return
   }
 

@@ -21,12 +21,52 @@ const rows = reactive([
 ])
 
 const query = ref('')
+const collapsedCategories = ref(new Set())
 
 const filteredRows = computed(() => {
   const keyword = query.value.trim().toLowerCase()
   if (!keyword) return rows
   return rows.filter((row) => Object.values(row).some((value) => String(value).toLowerCase().includes(keyword)))
 })
+
+const categoryCounts = computed(() => filteredRows.value.reduce((counts, row) => {
+  if (!row.group) counts[row.category] = (counts[row.category] || 0) + 1
+  return counts
+}, {}))
+
+const tableRows = computed(() => {
+  const seen = {}
+
+  return filteredRows.value.reduce((result, row) => {
+    if (row.group) {
+      result.push({ ...row, showCategory: true, rowspan: 1, expandable: false })
+      return result
+    }
+
+    const total = categoryCounts.value[row.category] || 1
+    const collapsed = collapsedCategories.value.has(row.category)
+    const seenCount = seen[row.category] || 0
+
+    if (collapsed && seenCount > 0) return result
+
+    seen[row.category] = seenCount + 1
+    result.push({
+      ...row,
+      showCategory: seenCount === 0,
+      rowspan: collapsed ? 1 : total,
+      expandable: total > 1,
+      collapsed
+    })
+    return result
+  }, [])
+})
+
+function toggleCategory(category) {
+  const next = new Set(collapsedCategories.value)
+  if (next.has(category)) next.delete(category)
+  else next.add(category)
+  collapsedCategories.value = next
+}
 </script>
 
 <template>
@@ -72,9 +112,14 @@ const filteredRows = computed(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in filteredRows" :key="row.no" :class="{ group: row.group }">
+              <tr v-for="row in tableRows" :key="row.no" :class="{ group: row.group }">
                 <td>{{ row.no }}</td>
-                <td>{{ row.category }}</td>
+                <td v-if="row.showCategory" :rowspan="row.rowspan" class="category-cell">
+                  <button v-if="row.expandable" class="category-toggle" @click="toggleCategory(row.category)">
+                    {{ row.collapsed ? '＋' : '－' }}
+                  </button>
+                  <span>{{ row.category }}</span>
+                </td>
                 <td>{{ row.name || '—' }}</td>
                 <td>{{ row.unit }}</td>
                 <td><input v-if="!row.group" v-model="row.value" class="quantity-input" /><span v-else>—</span></td>
