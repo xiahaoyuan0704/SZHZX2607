@@ -1,0 +1,22 @@
+{
+  "name": "engineering-handover-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron + Vue 3 工程提资桌面端原型",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "electron:dev": "concurrently -k \"npm run dev\" \"wait-on tcp:5173 && electron .\"",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "latest",
+    "vite": "latest",
+    "vue": "latest",
+    "electron": "latest",
+    "concurrently": "latest",
+    "wait-on": "latest"
+  },
+  "devDependencies": {}
+}
