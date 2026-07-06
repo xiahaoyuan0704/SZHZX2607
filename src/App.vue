@@ -1,13 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 
-const sections = [
-  { title: '接入系统', icon: '◎', items: ['评审资料采集', '项目评审'] },
-  { title: '基建可研', icon: '▣', items: ['评审资料采集', '项目评审', '项目收口'] },
-  { title: '基建初设', icon: '◈', active: true, items: ['评审资料采集', '项目评审', '项目收口'] },
-  { title: '基建施工图', icon: '▤', items: [] },
-  { title: '众兴院评审项目', icon: '◫', items: ['送审版资料采集', '收口版资料采集'] }
-]
+const menuTitle = '总平面工程量'
 
 const rows = reactive([
   { no: '十五', category: '总平面工程量', name: '', unit: '', value: '', remark: '', readonly: true, group: true },
@@ -27,18 +21,11 @@ const rows = reactive([
 ])
 
 const query = ref('')
-const currentTab = ref('项目收口')
 
 const filteredRows = computed(() => {
   const keyword = query.value.trim().toLowerCase()
   if (!keyword) return rows
   return rows.filter((row) => Object.values(row).some((value) => String(value).toLowerCase().includes(keyword)))
-})
-
-const completion = computed(() => {
-  const editable = rows.filter((row) => !row.group)
-  const filled = editable.filter((row) => String(row.value).trim()).length
-  return Math.round((filled / editable.length) * 100)
 })
 </script>
 
@@ -52,49 +39,46 @@ const completion = computed(() => {
           <span>Engineering Quantity</span>
         </div>
       </div>
-      <nav class="menu-list">
-        <section v-for="section in sections" :key="section.title" class="menu-section" :class="{ active: section.active }">
-          <div class="section-title"><span>{{ section.icon }}</span>{{ section.title }}<b>⌃</b></div>
-          <button v-for="item in section.items" :key="item" :class="{ selected: section.active && item === currentTab }" @click="currentTab = item">
-            {{ item }}
-          </button>
-        </section>
+      <nav class="single-menu">
+        <button class="selected">{{ menuTitle }}</button>
       </nav>
     </aside>
 
     <main class="workspace">
       <header class="hero-bar">
-        <div>
-          <p>项目中心 / 基建初设</p>
-          <h1>工程提资系统</h1>
-        </div>
-        <div class="hero-actions">
-          <button>消息</button><button>个人中心</button><button class="primary">保存草稿</button>
-        </div>
+        <p>项目中心 / 基建初设</p>
+        <h1>{{ menuTitle }}</h1>
       </header>
 
-      <div class="tabs"><button>个人中心</button><button>评审资料采集 ×</button><button class="active">{{ currentTab }} ×</button></div>
-
       <section class="content-card">
-        <div class="toolbar">
-          <div class="button-group"><button>↓ 数据导入</button><button>↑ 数据导出</button><button>▣ 打包下载</button></div>
-          <div class="filters"><select><option>请选择项目类别</option></select><input v-model="query" placeholder="WBS编码、项目名称、子项" /><button class="primary">筛选</button><button>更多</button></div>
-        </div>
-
-        <div class="summary-strip">
-          <div><span>当前模块</span><strong>{{ currentTab }}</strong></div>
-          <div><span>待填写字段</span><strong>E列工程量</strong></div>
-          <div><span>填写完成度</span><strong>{{ completion }}%</strong></div>
+        <div class="content-title">
+          <div>
+            <span>当前提资表</span>
+            <strong>{{ menuTitle }}</strong>
+          </div>
+          <input v-model="query" placeholder="搜索序号、项目名称、工程内容或说明" />
         </div>
 
         <div class="table-wrap">
           <table>
-            <thead><tr><th>序号</th><th>项目名称</th><th>工程内容</th><th>单位</th><th class="editable-head">E列：用户填写</th><th>说明 / 备注</th><th>操作</th></tr></thead>
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>项目名称</th>
+                <th>工程内容</th>
+                <th>单位</th>
+                <th class="editable-head">E列：用户填写</th>
+                <th>说明 / 备注</th>
+              </tr>
+            </thead>
             <tbody>
               <tr v-for="row in filteredRows" :key="row.no" :class="{ group: row.group }">
-                <td>{{ row.no }}</td><td>{{ row.category }}</td><td>{{ row.name || '—' }}</td><td>{{ row.unit }}</td>
+                <td>{{ row.no }}</td>
+                <td>{{ row.category }}</td>
+                <td>{{ row.name || '—' }}</td>
+                <td>{{ row.unit }}</td>
                 <td><input v-if="!row.group" v-model="row.value" class="quantity-input" /><span v-else>—</span></td>
-                <td>{{ row.remark }}</td><td><button class="ghost">查看</button></td>
+                <td>{{ row.remark }}</td>
               </tr>
             </tbody>
           </table>
