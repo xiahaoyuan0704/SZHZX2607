@@ -19,3 +19,10 @@ npm run electron:dev
 ```bash
 npm run build
 ```
+## 数据库设计
+
+当前版本已补充 MySQL 设计文档和初始化脚本：
+
+- `docs/database-design.md`：说明为什么要拆分模板数据和用户填写数据，以及读取/保存 E 列的典型 SQL。
+- `database/schema.sql`：创建 `projects`、`handover_templates`、`handover_template_items`、`project_handover_sheets`、`project_handover_values` 等表，并初始化“总平面工程量”模板数据。
+
