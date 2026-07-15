@@ -25,4 +25,7 @@ npm run build
 
 - `docs/database-design.md`：说明为什么要拆分模板数据和用户填写数据，以及读取/保存 E 列的典型 SQL。
 - `database/schema.sql`：创建 `projects`、`handover_templates`、`handover_template_items`、`project_handover_sheets`、`project_handover_values` 等表，并初始化“总平面工程量”模板数据。
+## Windows 启动排错
+
+如果看到 `@vitejs/plugin-vue resolved to an ESM file`，请确认项目使用的是 `vite.config.mjs`，并重新执行 `npm run electron:dev`。当前 npm 脚本已显式通过 `--config vite.config.mjs` 指定配置文件，避免 Windows 环境误加载旧的 `vite.config.js`。
 
