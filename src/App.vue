@@ -1,10 +1,17 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 
-const menuTitle = '总平面工程量'
+const menuItems = [
+  '01 全站建筑物（钢结构）', '02 220kV 设备基础及支架', '03 110kV 设备基础及支架',
+  '04 主变设备支架', '05 主变基础及油坑', '06 主变构架', '07 主变和电容器防火墙',
+  '08 独立避雷针', '09 消防水池', '10 与站址相关工程量', '11 总平面工程量',
+  '12 临设工程量', '13 站内外给排水工程量', '14 全站消防配置', '15 采暖通风'
+]
+
+const activeMenu = ref('11 总平面工程量')
+const projectName = ref('新建220kV 半户内变电站工程')
 
 const rows = reactive([
-  { no: '十五', category: '总平面工程量', name: '', unit: '', value: '', remark: '', readonly: true, group: true },
   { no: '1.1', category: '站址总用地面积', name: '', unit: 'hm²', value: '0.9255', remark: '13.8825亩' },
   { no: '1.2', category: '围墙内占地面积', name: '', unit: 'hm²', value: '0.7943', remark: '11.9145亩' },
   { no: '1.3', category: '进站道路占地面积', name: '', unit: 'hm²', value: '0.0225', remark: '0.3375亩' },
@@ -30,23 +37,16 @@ const filteredRows = computed(() => {
 })
 
 const categoryCounts = computed(() => filteredRows.value.reduce((counts, row) => {
-  if (!row.group) counts[row.category] = (counts[row.category] || 0) + 1
+  counts[row.category] = (counts[row.category] || 0) + 1
   return counts
 }, {}))
 
 const tableRows = computed(() => {
   const seen = {}
-
   return filteredRows.value.reduce((result, row) => {
-    if (row.group) {
-      result.push({ ...row, showCategory: true, rowspan: 1, expandable: false })
-      return result
-    }
-
     const total = categoryCounts.value[row.category] || 1
     const collapsed = collapsedCategories.value.has(row.category)
     const seenCount = seen[row.category] || 0
-
     if (collapsed && seenCount > 0) return result
 
     seen[row.category] = seenCount + 1
@@ -71,32 +71,45 @@ function toggleCategory(category) {
 
 <template>
   <div class="app-shell">
+    <div class="menu-bar">文件</div>
+
     <aside class="sidebar">
       <div class="brand-card">
-        <div class="brand-mark">EQ</div>
-        <div>
-          <strong>工程提资</strong>
-          <span>Engineering Quantity</span>
-        </div>
+        <strong>工程提资</strong>
+        <span>220kV 半户内变电站</span>
+        <small>以业务数据组织，不依赖 Excel 模板</small>
       </div>
-      <nav class="single-menu">
-        <button class="selected">{{ menuTitle }}</button>
+
+      <nav class="tree-nav" aria-label="工程量目录">
+        <p class="tree-label">土建</p>
+        <button
+          v-for="item in menuItems"
+          :key="item"
+          class="tree-item"
+          :class="{ active: activeMenu === item }"
+          @click="activeMenu = item"
+        >
+          <span class="tree-arrow">›</span>{{ item }}
+        </button>
       </nav>
     </aside>
 
     <main class="workspace">
-      <header class="hero-bar">
-        <p>项目中心 / 基建初设</p>
-        <h1>{{ menuTitle }}</h1>
+      <header class="page-heading">
+        <h1>{{ activeMenu }}</h1>
+        <p>总平面工程量。</p>
       </header>
 
-      <section class="content-card">
-        <div class="content-title">
-          <div>
-            <span>当前提资表</span>
-            <strong>{{ menuTitle }}</strong>
-          </div>
-          <input v-model="query" placeholder="搜索序号、项目名称、工程内容或说明" />
+      <section class="project-card">
+        <label for="project-name">工程名称</label>
+        <input id="project-name" v-model="projectName" />
+        <p>适用于当前已梳理完成的 220kV 半户内变电站提资目录。</p>
+      </section>
+
+      <section class="table-card">
+        <div class="table-heading">
+          <h2>11.1 总平面工程量</h2>
+          <input v-model="query" aria-label="搜索工程量" placeholder="搜索项目、规格或备注" />
         </div>
 
         <div class="table-wrap">
@@ -104,27 +117,28 @@ function toggleCategory(category) {
             <thead>
               <tr>
                 <th>序号</th>
-                <th>项目名称</th>
+                <th>项目 / 规格</th>
                 <th>工程内容</th>
                 <th>单位</th>
-                <th class="editable-head">E列：用户填写</th>
-                <th>说明 / 备注</th>
+                <th>工程量（E列填写）</th>
+                <th>备注 / 技术说明</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in tableRows" :key="row.no" :class="{ group: row.group }">
+              <tr v-for="row in tableRows" :key="row.no">
                 <td>{{ row.no }}</td>
                 <td v-if="row.showCategory" :rowspan="row.rowspan" class="category-cell">
-                  <button v-if="row.expandable" class="category-toggle" @click="toggleCategory(row.category)">
-                    {{ row.collapsed ? '＋' : '－' }}
+                  <button v-if="row.expandable" class="category-toggle" :aria-label="`${row.collapsed ? '展开' : '收起'}${row.category}`" @click="toggleCategory(row.category)">
+                    {{ row.collapsed ? '+' : '−' }}
                   </button>
                   <span>{{ row.category }}</span>
                 </td>
                 <td>{{ row.name || '—' }}</td>
                 <td>{{ row.unit }}</td>
-                <td><input v-if="!row.group" v-model="row.value" class="quantity-input" /><span v-else>—</span></td>
+                <td><input v-model="row.value" class="quantity-input" aria-label="填写工程量" /></td>
                 <td>{{ row.remark }}</td>
               </tr>
+              <tr v-if="tableRows.length === 0"><td colspan="6" class="empty-state">未找到匹配的工程量条目</td></tr>
             </tbody>
           </table>
         </div>
